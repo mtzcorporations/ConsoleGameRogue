@@ -20,7 +20,7 @@ namespace CLI_ROGUERAMBOGAME
         private static int[] deltaY = { -1, -1, -1, 0, 0, 1, 1, 1 };
         private static int[] deltaX = { -1, 0, 1, -1, 1, -1, 0, 1 };
         
-        public static  int currentturns = AVAIBLETURNS;
+        public static  int currentturns = 0;
         public static Player player;
         public static List<Terrorist> terrorists = new List<Terrorist>();
         public const int terroristDamage = 50;
@@ -102,6 +102,10 @@ namespace CLI_ROGUERAMBOGAME
                 Controls control;
                 Console.Clear();
                 levelData.DrawMap(cursorX,cursorY);
+                if (currentturns <= 0)
+                {
+                    TerroristTurn(levelData);
+                }
                 key = Console.ReadKey(true).Key;
                
                 // Check dictionary
@@ -187,7 +191,22 @@ namespace CLI_ROGUERAMBOGAME
             }
         }
 
-
+        private static  void TerroristTurn(Map level)
+        {
+            var path =terrorists[0].FindPath(level.MapData,new []{7,6});
+            if (path.Count==0)
+            {
+                return;
+            }
+            for (int i=0; i<5;i++)
+            {
+                var newPosition = path.Pop();
+                terrorists[0].UpdatePosition(newPosition);
+                level.ChangeMapData(newPosition[0],newPosition[1],'T');
+                level.DrawMap(0,0);
+                Thread.Sleep(100); 
+            }
+        }
         private static int ChooseLevel()
         {
             while (true)
