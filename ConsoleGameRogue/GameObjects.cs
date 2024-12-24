@@ -189,6 +189,9 @@ namespace CLI_ROGUERAMBOGAME
             {
                 Console.Write($"Slot {i+1}: {inventory[i]} | ");
             }
+
+            Console.ForegroundColor = ConsoleColor.Red;
+            Console.Write($"\n Avaible turns: {GameDriver.currentturns}");
             Console.ResetColor();
             Console.Write("\n");
         }
@@ -200,10 +203,13 @@ namespace CLI_ROGUERAMBOGAME
         public int[] position;
         public int health;
         private int damage;
-        private int vision;
-        
+        private  int vision=10;
+        private  int patrolRange = 7;
+        private const int mooves = 5;
         public int Damage()=>damage;
+        public int Mooves()=>mooves;
         public int Vision()=>vision;
+        public int PatrolRange()=>patrolRange;
         public Terrorist(int[] position, int health, int damage)
         {
             this.damage = damage;
@@ -279,13 +285,13 @@ namespace CLI_ROGUERAMBOGAME
                 continue;
 
             // Check if the tile is a wall
-            if (map[newY, newX] == 'W')
+            if (map[newY, newX] == 'W'  )
                 continue;
 
             // Calculate g-cost for the new position
             int jumpCost = 1;
-            if (map[newY, newX] == 'A' || map[newY, newX] == 'a' || map[newY, newX] == 'H' || map[newY, newX] == 'h')
-                jumpCost = 2; // Higher cost for jumping over assets
+            if (map[newY, newX] == 'A' || map[newY, newX] == 'a' || map[newY, newX] == 'H' || map[newY, newX] == 'h' ||  map[newY, newX] == 'T')
+                jumpCost = 4; // Higher cost for jumping over assets
 
             int newG = currentG + jumpCost;
 

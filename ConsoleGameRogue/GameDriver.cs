@@ -104,7 +104,7 @@ namespace CLI_ROGUERAMBOGAME
                 levelData.DrawMap(cursorX,cursorY);
                 if (currentturns <= 0)
                 {
-                    TerroristTurn(levelData);
+                    TerroristTurn(levelData,cursorY,cursorX);
                 }
                 key = Console.ReadKey(true).Key;
                
@@ -191,21 +191,53 @@ namespace CLI_ROGUERAMBOGAME
             }
         }
 
-        private static  void TerroristTurn(Map level)
+        private static  bool TerroristTurn(Map level,int cursorY,int cursorX)
         {
-            var path =terrorists[0].FindPath(level.MapData,new []{7,6});
-            if (path.Count==0)
+            for (int t = 0; t < terrorists.Count; t++)
             {
-                return;
+                var path = terrorists[t].FindPath(level.MapData, player.position );
+
+                int count = path.Count;
+                int minCount = Math.Min(count, terrorists[t].Mooves());
+                if (count > terrorists[t].Vision()) //patrol mode!
+                {
+                   // path=PatrolPath(level, cursorY, cursorX, terrorists[t]);
+                   
+                }
+                else if(minCount<2)
+                {
+                    continue;        
+                }
+                for (int i = 0; i < minCount; i++)
+                {
+                    var newPosition = path.Pop();
+                    if (level.GetDataForPosition(newPosition[0], newPosition[1]) != ' ') continue;
+                    level.ChangeMapData(terrorists[t].position[0], terrorists[t].position[1], emptyMapCellChar);
+                    terrorists[t].UpdatePosition(newPosition);
+                    level.ChangeMapData(newPosition[0], newPosition[1], 'T');
+                    level.DrawMap(cursorX, cursorY);
+                    Thread.Sleep(100);
+
+                    if (player.currentHealth <= 0)
+                    {
+                        return true;
+                    }
+                }
             }
-            for (int i=0; i<5;i++)
+
+            return false;
+        }
+
+        private static Stack<int[]> PatrolPath(Map level,int cursorY,int cursorX, Terrorist T)
+        {
+            
+            var path = T.FindPath(level.MapData, player.position );
+            for (int i=0;i<T.Mooves();i++)
             {
-                var newPosition = path.Pop();
-                terrorists[0].UpdatePosition(newPosition);
-                level.ChangeMapData(newPosition[0],newPosition[1],'T');
-                level.DrawMap(0,0);
-                Thread.Sleep(100); 
+                
             }
+
+            return path;
         }
         private static int ChooseLevel()
         {
