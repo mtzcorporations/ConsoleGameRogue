@@ -64,11 +64,71 @@ namespace CLI_ROGUERAMBOGAME
         }
         static void LoadLevel()
         {
-            String name = GameDriver.pathToSavedData+"\\tale.txt";
-            GameDriver.PlayGame(-1,true,name);
+            //String path = GameDriver.pathToSavedData+"\\tale.txt";
+            string path = ListDir(GameDriver.pathToSavedData);
+            GameDriver.PlayGame(path,true);
        
         }
 
+        public static string ListDir(string directoryPath)
+        {
+            if (!Directory.Exists(directoryPath))
+            {
+                Console.WriteLine("Directory not found.");
+                return "";
+            }
+
+            string[] files = Directory.GetFiles(directoryPath);
+            if (files.Length == 0)
+            {
+                Console.WriteLine("No files found in the directory.");
+                return "";
+            }
+
+            int selectedIndex = 0;
+            bool stayInMenu = true;
+
+            while (stayInMenu)
+            {
+                Console.Clear();
+                Console.WriteLine($"__________Files in {directoryPath}__________");
+
+                for (int i = 0; i < files.Length; i++)
+                {
+                    string fileName = Path.GetFileName(files[i]);
+                    if (i == selectedIndex)
+                    {
+                        Console.BackgroundColor = ConsoleColor.DarkGray;
+                        Console.WriteLine("> " + fileName);
+                        Console.ResetColor();
+                    }
+                    else
+                    {
+                        Console.WriteLine("  " + fileName);
+                    }
+                }
+
+                ConsoleKeyInfo keyInfo = Console.ReadKey(true);
+
+                if (keyInfo.Key == ConsoleKey.UpArrow)
+                {
+                    selectedIndex = (selectedIndex - 1 + files.Length) % files.Length;
+                }
+                else if (keyInfo.Key == ConsoleKey.DownArrow)
+                {
+                    selectedIndex = (selectedIndex + 1) % files.Length;
+                }
+                else if (keyInfo.Key == ConsoleKey.Enter)
+                {
+                    stayInMenu = false;
+                    Console.Clear();
+                    Console.WriteLine($"You selected: {Path.GetFileName(files[selectedIndex])}");
+                    return files[selectedIndex];
+                }
+            }
+
+            return "";
+        }
         static void GenerateMap()
         {
             // Implementation for saved  data
@@ -79,8 +139,9 @@ namespace CLI_ROGUERAMBOGAME
         }
         static void PlayGame()
         {
+            string path = ListDir(GameDriver.pathToLevels);
             // Implementation for loading a level
-            GameDriver.PlayGame();
+            GameDriver.PlayGame(path,false);
         }
         static void ControlsAndRules()
         {

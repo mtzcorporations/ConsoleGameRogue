@@ -8,7 +8,7 @@ namespace CLI_ROGUERAMBOGAME
 {
     public static class GameDriver
     {
-        private static String pathToLevels;
+        public static String pathToLevels;
         public static String pathToSavedData;
         private const String levelsDir = "\\Levels";
         private const String savedGames = "\\SavedGame";
@@ -97,19 +97,10 @@ namespace CLI_ROGUERAMBOGAME
                 Console.WriteLine($"Error: {ex.Message}");
             }
         }
-        public static void PlayGame(int levelIndex=-1, bool customLevel=false,String customPath="") {    
+        public static void PlayGame(String customPath,bool customLevel) {    
             int cursorX = 1, cursorY = 1;
-            LoadLevels(customLevel,customPath);
-
-            if (levelIndex == -1 &&!customLevel)
-            {
-                levelIndex=ChooseLevel()-1;
-            }
-            else if(customLevel)
-            {
-                levelIndex = 0;
-            }
-            Map levelData = LevelMapHandler.GetLevel(levelIndex);
+            LoadLevel(customPath,customLevel);
+            Map levelData = LevelMapHandler.GetLevel();
             int mapHeight = levelData.Height;
             int mapWidth = levelData.Width;
             
@@ -186,7 +177,9 @@ namespace CLI_ROGUERAMBOGAME
                         player.UseItem(levelData);
                         break;
                     case Controls.SaveGame:
-                        SaveGame(levelData,levelIndex.ToString());
+                        string[] parts = customPath.Split('\\');
+                        string name = parts[^1].Split('.')[0];
+                        SaveGame(levelData,name);
                         break;
                     case Controls.Reset:
                         stayInloop = false;
@@ -199,17 +192,17 @@ namespace CLI_ROGUERAMBOGAME
             }
             if (keyToControlMap[key] == Controls.Reset)
             {
-                Reset(customLevel,customPath);
-                PlayGame(levelIndex,customLevel,customPath);
+                Reset(customPath,customLevel);
+                PlayGame(customPath,customLevel);
             }
             else
             {
-                Reset(customLevel,customPath);
+                Reset(customPath,customLevel);
                 MenuScreen.Menu();
             }
         }
 
-        private static  bool TerroristTurn(Map level,int cursorY,int cursorX)
+        private static  void TerroristTurn(Map level,int cursorY,int cursorX)
         {
             for (int t = 0; t < terrorists.Count; t++)
             {
@@ -235,11 +228,10 @@ namespace CLI_ROGUERAMBOGAME
                 }
                 if (player.currentHealth <= 0)
                 {
-                    return true;
+                    return ;
                 }
             }
 
-            return false;
         }
 
         private static void MooveOnPath(Map level,Stack<int[]> path,int cursorY,int cursorX,int t)
@@ -308,7 +300,7 @@ namespace CLI_ROGUERAMBOGAME
         private static int ChooseLevel()
         {
             //Console.Clear();
-            int numberOfLevels = LevelMapHandler.GetLevelsNumber();
+            int numberOfLevels = 1;
             var message = $"Choose level from 1 to {numberOfLevels}:";
             while (true)
             {
@@ -416,49 +408,16 @@ namespace CLI_ROGUERAMBOGAME
                 }
             }
         }
-        private static void LoadLevels(bool customLevel,String customLevelPath)
+        private static void LoadLevel(String customLevelPath,bool customLevel)
         {
             LevelMapHandler.ResetLevels();
-            if (customLevel)
+         
+            var map = LevelMapHandler.ReadLevelFromTxt(customLevelPath,customLevel);
+            if (map != null)
             {
-                
-                var map = LevelMapHandler.ReadLevelFromTxt(customLevelPath,true);
-                if (map != null)
-                {
-                    LevelMapHandler.AddLevel(map);
-                    Console.WriteLine($"Loaded level from {customLevelPath}");
-                }
-                return;
+                LevelMapHandler.AddLevel(map);
+                Console.WriteLine($"Loaded level from {customLevelPath}");
             }
-            if (!Directory.Exists(pathToLevels))
-            {
-                Console.WriteLine($"ERROR: Directory '{pathToLevels}' does not exist.");
-                return;
-            }
-
-            string[] levelFiles = Directory.GetFiles(pathToLevels, "*.txt");
-            if (levelFiles.Length == 0)
-            {
-                Console.WriteLine($"No level files found in directory '{pathToLevels}'.");
-                return;
-            }
-
-            foreach (var levelFile in levelFiles)
-            {
-                var map = LevelMapHandler.ReadLevelFromTxt(levelFile);
-                if (map != null)
-                {
-                    LevelMapHandler.AddLevel(map);
-                    Console.WriteLine($"Loaded level from {levelFile}");
-                }
-                else
-                {
-                    Console.WriteLine($"Failed to load level from {levelFile}");
-                }
-            }
-
-            Console.WriteLine($"{levelFiles.Length} levels loaded successfully.");
-            Console.WriteLine($"{levelFiles.Length} levels loaded successfully.");
         }
 
      
@@ -599,13 +558,13 @@ namespace CLI_ROGUERAMBOGAME
             Thread.Sleep(300);
         }
 
-        private static void Reset(bool customLevel,String customLevelPath)
+        private static void Reset(String customLevelPath,bool customLevel)
         {
             currentturns = AVAIBLETURNS;
             terrorists.Clear();
             player = null;
             //LevelMapHandler.ResetLevels();
-            LoadLevels(customLevel,customLevelPath);
+            LoadLevel(customLevelPath,customLevel);
          
         }
       

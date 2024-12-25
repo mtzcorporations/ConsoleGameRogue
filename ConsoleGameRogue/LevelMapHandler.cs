@@ -91,17 +91,12 @@ namespace CLI_ROGUERAMBOGAME
     }
     public static class LevelMapHandler
     {
-        private static List<Map> Maps { get; } = new List<Map>();
+        private static Map map { get; set; }
 
-        public static void ResetLevels() =>Maps.Clear();
-        public static int GetLevelsNumber() =>Maps.Count;
-        public static void AddLevel(Map Level) => Maps.Add(Level);
-
-        public static Map GetLevel(int levelIndex)
-        {
-            return Maps[levelIndex];
-        }
-        public static Map ReadLevelFromTxt(string filePath,bool readCustom=false)
+        public static void ResetLevels() =>map=null;
+        public static void AddLevel(Map level) => map = level;
+        public static Map GetLevel() => map;
+        public static Map ReadLevelFromTxt(string filePath,bool readCustom)
         {
             try
             {
