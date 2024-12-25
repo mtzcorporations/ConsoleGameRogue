@@ -101,10 +101,13 @@ namespace CLI_ROGUERAMBOGAME
             int cursorX = 1, cursorY = 1;
             LoadLevels(customLevel,customPath);
 
-            if (levelIndex == -1)
+            if (levelIndex == -1 &&!customLevel)
             {
                 levelIndex=ChooseLevel()-1;
-                //levelIndex = 0;
+            }
+            else if(customLevel)
+            {
+                levelIndex = 0;
             }
             Map levelData = LevelMapHandler.GetLevel(levelIndex);
             int mapHeight = levelData.Height;
@@ -194,7 +197,6 @@ namespace CLI_ROGUERAMBOGAME
                 }
 
             }
-
             if (keyToControlMap[key] == Controls.Reset)
             {
                 Reset(customLevel,customPath);
@@ -217,7 +219,8 @@ namespace CLI_ROGUERAMBOGAME
                 int minCount = Math.Min(count, terrorists[t].Mooves());
                 if (count > terrorists[t].Vision()) //patrol mode!
                 {
-                   //path=PatrolPath(level, cursorY, cursorX, terrorists[t]);
+                   path=PatrolPath(level, cursorY, cursorX, t);
+                   if(path==null || path.Count<2) continue;
                    count = path.Count;
                    minCount = Math.Min(count, terrorists[t].Mooves());
                 }
@@ -225,9 +228,10 @@ namespace CLI_ROGUERAMBOGAME
                 {
                     continue;        
                 }
-                for (int i = 0; i < minCount; i++)
+                for (int i = 0; i < minCount; i++) //in vision--chase
                 {
                     MooveOnPath(level,path,cursorY,cursorX,t);
+                    terrorists[t].patrolPoint = terrorists[t].position; //set new patrol point
                 }
                 if (player.currentHealth <= 0)
                 {
@@ -238,30 +242,68 @@ namespace CLI_ROGUERAMBOGAME
             return false;
         }
 
-        private static void MooveOnPath(Map level,Stack<int[]> path,int cursorY,int cursorX,int terroristIndex)
+        private static void MooveOnPath(Map level,Stack<int[]> path,int cursorY,int cursorX,int t)
         {
             var newPosition = path.Pop();
             if (level.GetDataForPosition(newPosition[0], newPosition[1]) != ' ') return ;
-            level.ChangeMapData(terrorists[terroristIndex].position[0], terrorists[terroristIndex].position[1], emptyMapCellChar);
-            terrorists[terroristIndex].UpdatePosition(newPosition);
+            level.ChangeMapData(terrorists[t].position[0], terrorists[t].position[1], emptyMapCellChar);
+            terrorists[t].UpdatePosition(newPosition);
             level.ChangeMapData(newPosition[0], newPosition[1], 'T');
             level.DrawMap(cursorX, cursorY);
             Thread.Sleep(100);
 
            
         }
-        private static Stack<int[]> PatrolPath(Map level,int cursorY,int cursorX, Terrorist T,int [] targetPos)
+        private static Stack<int[]> PatrolPath(Map level,int cursorY,int cursorX, int t)
         {
-            
-            var target = T.FindPath(level.MapData, player.position );
-            for (int i=0;i<T.Mooves();i++)
+            int[] patroPosition = GeneratePatrolPoint(terrorists[t].patrolPoint,terrorists[t].PatrolRange(),level.MapData);
+            if (patroPosition == null) return null;
+            var patrolPath = terrorists[t].FindPath(level.MapData, patroPosition );
+            int steps = Math.Min(terrorists[t].Mooves(), patrolPath.Count);
+            for (int i=0;i<steps;i++)
             {
-                var path = T.FindPath(level.MapData, player.position );
-                if (path.Count() <=T.Vision()) return path;
-
+                var path = terrorists[t].FindPath(level.MapData, player.position );
+                if (path.Count() <= terrorists[t].Vision())
+                {
+                    return path;
+                }
+                MooveOnPath(level,patrolPath,cursorY,cursorX,t);
+                
             }
 
             return null;
+        }
+        public static bool IsPositionFree(int y, int x, char[,] mapGrid)
+        {
+            if (y < 0 || x < 0 || y >= mapGrid.GetLength(0) || x >= mapGrid.GetLength(1))
+                return false;
+            return mapGrid[y, x] == ' ';
+        }
+        
+        public static int[] GeneratePatrolPoint(int[] patrolPosition, int patrolRange, char[,] mapGrid)
+        {
+            Random rand = new Random();
+            int patrolPointY = patrolPosition[0];
+            int patrolPointX = patrolPosition[1];
+
+            // Try generating a patrol point until we find a free position within range
+            for (int i = 0; i < 150; i++) // Limit retries to avoid infinite loops
+            {
+                int dy = rand.Next(-patrolRange, patrolRange + 1);
+                int dx = rand.Next(-patrolRange, patrolRange + 1);
+                
+                if (Math.Abs(dy) + Math.Abs(dx) <= patrolRange)
+                {
+                    int newY = patrolPointY + dy;
+                    int newX = patrolPointX + dx;
+                    if (IsPositionFree(newY, newX, mapGrid))
+                    {
+                        return new int[] { newY, newX };
+                    }
+                }
+            }
+
+            return null; // Return null if no valid patrol point was found within 100 retries
         }
         private static int ChooseLevel()
         {
@@ -416,6 +458,7 @@ namespace CLI_ROGUERAMBOGAME
             }
 
             Console.WriteLine($"{levelFiles.Length} levels loaded successfully.");
+            Console.WriteLine($"{levelFiles.Length} levels loaded successfully.");
         }
 
      
@@ -521,8 +564,6 @@ namespace CLI_ROGUERAMBOGAME
                     stepY = -1;
                     break;
             }
-           
-
 // Simulate bullet travel along the chosen direction
             int bulletX = shooterPos[1];
             int bulletY = shooterPos[0];
@@ -548,8 +589,7 @@ namespace CLI_ROGUERAMBOGAME
                 Thread.Sleep(100); // Delay to simulate bullet movement
 
             }
-           
-            //reset bulletPath
+
             for (int i=0;i<bulletXPath.Count;i++)
             {
                 bulletX = bulletXPath[i];

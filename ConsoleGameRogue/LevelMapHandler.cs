@@ -46,10 +46,11 @@ namespace CLI_ROGUERAMBOGAME
                         {
                             Console.ForegroundColor = ConsoleColor.Green;
                         }
-                        if (MapData[y, x] == 'T')
+                        else if (MapData[y, x] == 'T')
                         {
                             Console.ForegroundColor = ConsoleColor.Red;
-                        }
+                        } else if(MapData[y,x]=='h' || MapData[y,x]=='H') Console.ForegroundColor = ConsoleColor.Cyan;
+                        else if(MapData[y,x]=='h' || MapData[y,x]=='H') Console.ForegroundColor = ConsoleColor.DarkMagenta;
                         
                         Console.Write(MapData[y, x]);
                         Console.ResetColor();

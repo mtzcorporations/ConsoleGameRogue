@@ -206,6 +206,7 @@ namespace CLI_ROGUERAMBOGAME
         private  int vision=10;
         private  int patrolRange = 7;
         private const int mooves = 5;
+        public int[] patrolPoint;
         public int Damage()=>damage;
         public int Mooves()=>mooves;
         public int Vision()=>vision;
@@ -215,7 +216,8 @@ namespace CLI_ROGUERAMBOGAME
             this.damage = damage;
             this.health = health;
             this.position = position;
-   
+            patrolPoint = this.position;
+
         }
 
         public void UpdatePosition(int[] position)
