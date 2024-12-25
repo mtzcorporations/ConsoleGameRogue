@@ -72,6 +72,7 @@ namespace CLI_ROGUERAMBOGAME
 
         public static string ListDir(string directoryPath)
         {
+            Console.Clear();
             if (!Directory.Exists(directoryPath))
             {
                 Console.WriteLine("Directory not found.");
