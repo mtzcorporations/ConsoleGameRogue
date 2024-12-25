@@ -26,7 +26,7 @@ namespace CLI_ROGUERAMBOGAME
                         Console.WriteLine("  " + options[i]);
                     }
                 }
-
+                GraphicsReader.PrintGraphics("AK_47");
                 ConsoleKeyInfo keyInfo = Console.ReadKey(true);
 
                 if (keyInfo.Key == ConsoleKey.UpArrow)
@@ -86,9 +86,10 @@ namespace CLI_ROGUERAMBOGAME
         {
             // Implementation for generating a custom level
             Console.Clear();
-            Console.WriteLine("Press F1 to return to main menu\n");
+            Console.WriteLine("CONTROLS AND INSTRUCTIONS FOR GAME");
+            PrintBadGuy();
             Console.ForegroundColor = ConsoleColor.Green;
-      
+            
             Console.Write($"You have {GameDriver.AVAIBLETURNS} turns per cycle. ");
             Console.ForegroundColor = ConsoleColor.DarkMagenta;
             Console.Write($"Movement costs  {GameDriver.ACTIVITYCOST} for 1 step in each direction. \n");
@@ -97,11 +98,13 @@ namespace CLI_ROGUERAMBOGAME
             Console.ForegroundColor = ConsoleColor.Red;
             Console.Write("Picking up item costs 0\n");
             Console.ForegroundColor = ConsoleColor.DarkGreen;
-            Console.WriteLine("\nTo win the game defeat all Terrorists. You can only shoot in 8 directions\n, up, down, left, right and " +
+            PrintBadGuy();
+            Console.WriteLine("To win the game defeat all Terrorists. You can only shoot in 8 directions,\nup, down, left, right and " +
                               "diagonal so be careful how you set cursor!\n" +
                               "Items on map will help you win the game! Be aware Terrorists can shoot you.");
             Console.ForegroundColor = ConsoleColor.DarkBlue;
-            Console.WriteLine("\nControls:");
+            PrintBadGuy();
+            Console.WriteLine("Controls:");
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine("Space".PadRight(15) + "--> Shooting");
             Console.WriteLine("R".PadRight(15) + "--> Reload");
@@ -114,7 +117,7 @@ namespace CLI_ROGUERAMBOGAME
             Console.WriteLine("F1".PadRight(15) + "--> Return to main menu");
            
             Console.ResetColor();
-
+            PrintBadGuy();
             while (true)
             {
                 ConsoleKeyInfo keyInfo = Console.ReadKey(true);
@@ -126,6 +129,16 @@ namespace CLI_ROGUERAMBOGAME
             }
 
             Menu();
+        }
+
+        private static void PrintBadGuy()
+        {
+            GraphicsReader.PrintGraphics("BADGUY");
+            Console.Write("                 ");
+            GraphicsReader.PrintGraphics("BADGUY");
+            Console.Write("                 ");
+            GraphicsReader.PrintGraphics("BADGUY");
+            Console.Write("\n");
         }
     }
 }

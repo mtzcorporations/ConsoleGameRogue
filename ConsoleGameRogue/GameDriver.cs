@@ -70,16 +70,32 @@ namespace CLI_ROGUERAMBOGAME
       
         static void Main(string[] args)
         {
+            Console.OutputEncoding = System.Text.Encoding.UTF8;
+
             if (args.Length == 0)
             {
                 Console.WriteLine("Please provide the path to the file as an argument.");
                 return;
             }
-            string filePath = args[0];
-            pathToLevels=filePath+ levelsDir;
-            pathToSavedData = filePath + savedGames;
+            string rootPath = args[0];
+            ReadGraphics(rootPath);
+            pathToLevels=rootPath+ levelsDir;
+            pathToSavedData = rootPath + savedGames;
                         
             MenuScreen.Menu();
+        }
+
+        static void ReadGraphics(String pathToRoot)
+        {
+            string graphicsFolderPath = pathToRoot+ "\\Graphics";
+            try
+            {
+                GraphicsReader.ReadGraphics(graphicsFolderPath);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error: {ex.Message}");
+            }
         }
         public static void PlayGame(int levelIndex=-1, bool customLevel=false,String customPath="") {    
             int cursorX = 1, cursorY = 1;
@@ -87,8 +103,8 @@ namespace CLI_ROGUERAMBOGAME
 
             if (levelIndex == -1)
             {
-                //int levelIndex=ChooseLevel()-1;
-                levelIndex = 0;
+                levelIndex=ChooseLevel()-1;
+                //levelIndex = 0;
             }
             Map levelData = LevelMapHandler.GetLevel(levelIndex);
             int mapHeight = levelData.Height;
@@ -201,8 +217,9 @@ namespace CLI_ROGUERAMBOGAME
                 int minCount = Math.Min(count, terrorists[t].Mooves());
                 if (count > terrorists[t].Vision()) //patrol mode!
                 {
-                   // path=PatrolPath(level, cursorY, cursorX, terrorists[t]);
-                   
+                   //path=PatrolPath(level, cursorY, cursorX, terrorists[t]);
+                   count = path.Count;
+                   minCount = Math.Min(count, terrorists[t].Mooves());
                 }
                 else if(minCount<2)
                 {
@@ -210,42 +227,53 @@ namespace CLI_ROGUERAMBOGAME
                 }
                 for (int i = 0; i < minCount; i++)
                 {
-                    var newPosition = path.Pop();
-                    if (level.GetDataForPosition(newPosition[0], newPosition[1]) != ' ') continue;
-                    level.ChangeMapData(terrorists[t].position[0], terrorists[t].position[1], emptyMapCellChar);
-                    terrorists[t].UpdatePosition(newPosition);
-                    level.ChangeMapData(newPosition[0], newPosition[1], 'T');
-                    level.DrawMap(cursorX, cursorY);
-                    Thread.Sleep(100);
-
-                    if (player.currentHealth <= 0)
-                    {
-                        return true;
-                    }
+                    MooveOnPath(level,path,cursorY,cursorX,t);
+                }
+                if (player.currentHealth <= 0)
+                {
+                    return true;
                 }
             }
 
             return false;
         }
 
-        private static Stack<int[]> PatrolPath(Map level,int cursorY,int cursorX, Terrorist T)
+        private static void MooveOnPath(Map level,Stack<int[]> path,int cursorY,int cursorX,int terroristIndex)
+        {
+            var newPosition = path.Pop();
+            if (level.GetDataForPosition(newPosition[0], newPosition[1]) != ' ') return ;
+            level.ChangeMapData(terrorists[terroristIndex].position[0], terrorists[terroristIndex].position[1], emptyMapCellChar);
+            terrorists[terroristIndex].UpdatePosition(newPosition);
+            level.ChangeMapData(newPosition[0], newPosition[1], 'T');
+            level.DrawMap(cursorX, cursorY);
+            Thread.Sleep(100);
+
+           
+        }
+        private static Stack<int[]> PatrolPath(Map level,int cursorY,int cursorX, Terrorist T,int [] targetPos)
         {
             
-            var path = T.FindPath(level.MapData, player.position );
+            var target = T.FindPath(level.MapData, player.position );
             for (int i=0;i<T.Mooves();i++)
             {
-                
+                var path = T.FindPath(level.MapData, player.position );
+                if (path.Count() <=T.Vision()) return path;
+
             }
 
-            return path;
+            return null;
         }
         private static int ChooseLevel()
         {
+            //Console.Clear();
+            int numberOfLevels = LevelMapHandler.GetLevelsNumber();
+            var message = $"Choose level from 1 to {numberOfLevels}:";
             while (true)
             {
-                int numberOfLevels = LevelMapHandler.GetLevelsNumber();
-                
-                Console.WriteLine($"Choose level from 1 to {numberOfLevels}:");
+                Console.Clear();
+                Console.WriteLine(message);
+                GraphicsReader.PrintGraphics("KNIFE");
+                Console.Write("\n");
                 ConsoleKeyInfo keyInfo = Console.ReadKey(true);
                 if (char.IsDigit(keyInfo.KeyChar))
                 {
@@ -255,12 +283,12 @@ namespace CLI_ROGUERAMBOGAME
                         return level;
                     }
 
-                    Console.WriteLine("Invalid input. Please enter a number between 1 and {0}.", numberOfLevels);
+                    message=$"Invalid input. Please enter a number between 1 and {numberOfLevels}.";
 
                 }
                 else
                 {
-                    Console.WriteLine("Invalid input. Please enter a number.");
+                    message=$"Invalid input. Please enter a number between 1 and {numberOfLevels}.";
                 }
             }
         }
