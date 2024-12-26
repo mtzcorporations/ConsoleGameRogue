@@ -163,7 +163,47 @@ namespace CLI_ROGUERAMBOGAME
         {
             return FindEmptySlot() == -1;
         }
-        
+
+        public void PlayerShot(int damage,Map level)
+        {
+            int headProbability = 1;   // 1/15
+            int bodyProbability = 5;   // 5/15
+            int armsProbability = 4;   // 4/15
+            int legsProbability = 5;   // 5/15
+            int totalProbability = headProbability + bodyProbability + armsProbability + legsProbability;
+            
+            Random random = new Random();
+            int randomValue = random.Next(1, totalProbability + 1); 
+            float damageMultiplier = 1.0f;
+            string hitLocation;
+
+            if (randomValue <= headProbability)
+            {
+                damageMultiplier = 3.0f;
+                hitLocation = "Head";
+            }
+            else if (randomValue <= headProbability + bodyProbability)
+            {
+                damageMultiplier = 2.0f;
+                hitLocation = "Body";
+            }
+            else if (randomValue <= headProbability + bodyProbability + armsProbability)
+            {
+                damageMultiplier = 1.0f;
+                hitLocation = "Arms";
+            }
+            else
+            {
+                damageMultiplier = 1.5f;
+                hitLocation = "Legs";
+            }
+            
+            int finalDamage = (int)Math.Round(damage * damageMultiplier);
+            currentHealth -= finalDamage;
+
+            level.CustomMessage($"You were hit in {hitLocation}!");
+        }
+
         private int FindEmptySlot()
         {
             for (int i = 0; i < inventory.Length; i++)

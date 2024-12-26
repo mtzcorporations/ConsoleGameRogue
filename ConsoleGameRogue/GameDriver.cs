@@ -221,7 +221,7 @@ namespace CLI_ROGUERAMBOGAME
                    count = path.Count;
                    minCount = Math.Min(count, terrorists[t].Mooves());
                 }
-                if(minCount<5)
+                else if(minCount<5)
                 {
                     //shooting
                     TerroristShoot(level,path,cursorY,cursorX,t);
@@ -274,26 +274,27 @@ namespace CLI_ROGUERAMBOGAME
                 if(trace[0]==terrorists[t].position[0]&&trace[1]==terrorists[t].position[1]) continue;
                 level.ChangeMapData(trace[0],trace[1],emptyMapCellChar);
             }
+            player.PlayerShot(terrorists[t].Damage(),level);
             level.DrawMap(cursorX, cursorY);
-            Thread.Sleep(100);
+            Thread.Sleep(300);
         }
-        private static void MooveOnPath(Map level,Stack<int[]> path,int cursorY,int cursorX,int t,bool chase=false)
+        private static bool  MooveOnPath(Map level,Stack<int[]> path,int cursorY,int cursorX,int t,bool chase=false)
         {
             if(path.Count()<5&&chase)
             {
                 //shooting
                 TerroristShoot(level,path,cursorY,cursorX,t);
-                return;        
+                return true;        
             }
             var newPosition = path.Pop();
-            if (level.GetDataForPosition(newPosition[0], newPosition[1]) != ' ') return ;
+            if (level.GetDataForPosition(newPosition[0], newPosition[1]) != ' ') return false;
             level.ChangeMapData(terrorists[t].position[0], terrorists[t].position[1], emptyMapCellChar);
             terrorists[t].UpdatePosition(newPosition);
             level.ChangeMapData(newPosition[0], newPosition[1], 'T');
             level.DrawMap(cursorX, cursorY);
             Thread.Sleep(100);
 
-           
+            return false;
         }
         private static Stack<int[]> PatrolPath(Map level,int cursorY,int cursorX, int t)
         {
@@ -308,7 +309,7 @@ namespace CLI_ROGUERAMBOGAME
                 {
                     return path;
                 }
-                MooveOnPath(level,patrolPath,cursorY,cursorX,t);
+                if(MooveOnPath(level,patrolPath,cursorY,cursorX,t)) return null;
                 
             }
 
@@ -345,35 +346,6 @@ namespace CLI_ROGUERAMBOGAME
             }
 
             return null; // Return null if no valid patrol point was found within 100 retries
-        }
-        private static int ChooseLevel()
-        {
-            //Console.Clear();
-            int numberOfLevels = 1;
-            var message = $"Choose level from 1 to {numberOfLevels}:";
-            while (true)
-            {
-                Console.Clear();
-                Console.WriteLine(message);
-                GraphicsReader.PrintGraphics("KNIFE");
-                Console.Write("\n");
-                ConsoleKeyInfo keyInfo = Console.ReadKey(true);
-                if (char.IsDigit(keyInfo.KeyChar))
-                {
-                    int level = int.Parse(keyInfo.KeyChar.ToString());
-                    if (level >= 1 && level <= numberOfLevels)
-                    {
-                        return level;
-                    }
-
-                    message=$"Invalid input. Please enter a number between 1 and {numberOfLevels}.";
-
-                }
-                else
-                {
-                    message=$"Invalid input. Please enter a number between 1 and {numberOfLevels}.";
-                }
-            }
         }
 
         private static void SaveGame(Map levelData,string levelIndex)
@@ -607,7 +579,7 @@ namespace CLI_ROGUERAMBOGAME
             }
             Thread.Sleep(300);
         }
-
+        
         private static void Reset(String customLevelPath,bool customLevel)
         {
             currentturns = AVAIBLETURNS;
