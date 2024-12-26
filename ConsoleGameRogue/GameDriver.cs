@@ -115,6 +115,8 @@ namespace CLI_ROGUERAMBOGAME
                 if (currentturns <= 0)
                 {
                     TerroristTurn(levelData,cursorY,cursorX);
+                    currentturns = AVAIBLETURNS;
+                    continue;
                 }
                 key = Console.ReadKey(true).Key;
                
@@ -164,6 +166,7 @@ namespace CLI_ROGUERAMBOGAME
                     case Controls.Reload:
                         if (player.ammonition < 4)
                         {
+                            currentturns -= 1;
                             player.ammonition = 4;
                         }
                         break;
@@ -200,6 +203,7 @@ namespace CLI_ROGUERAMBOGAME
                 Reset(customPath,customLevel);
                 MenuScreen.Menu();
             }
+            Thread.Sleep(100);
         }
 
         private static  void TerroristTurn(Map level,int cursorY,int cursorX)
@@ -217,13 +221,16 @@ namespace CLI_ROGUERAMBOGAME
                    count = path.Count;
                    minCount = Math.Min(count, terrorists[t].Mooves());
                 }
-                else if(minCount<2)
+                if(minCount<5)
                 {
+                    //shooting
+                    TerroristShoot(level,path,cursorY,cursorX,t);
                     continue;        
                 }
                 for (int i = 0; i < minCount; i++) //in vision--chase
                 {
-                    MooveOnPath(level,path,cursorY,cursorX,t);
+                   
+                    MooveOnPath(level,path,cursorY,cursorX,t,true);
                     terrorists[t].patrolPoint = terrorists[t].position; //set new patrol point
                 }
                 if (player.currentHealth <= 0)
@@ -233,9 +240,51 @@ namespace CLI_ROGUERAMBOGAME
             }
 
         }
-
-        private static void MooveOnPath(Map level,Stack<int[]> path,int cursorY,int cursorX,int t)
+        private static void TerroristShoot(Map level,Stack<int[]> path,int cursorY,int cursorX,int t)
         {
+            List<int[]> pathTrace = new List<int[]>(); 
+            pathTrace.AddRange(path);
+            var range = path.Count;
+            for(int i=0;i<range;i++) {
+                var newPosition = path.Pop();
+                if (path.Count ==0)
+                {
+                    level.DrawMap(newPosition[1], newPosition[0]);
+                    Thread.Sleep(150);
+                    level.DrawMap(0, 0,false);
+                    Thread.Sleep(100);
+                    level.DrawMap(newPosition[1], newPosition[0]);
+                    Thread.Sleep(100);
+            
+                }
+                if (level.GetDataForPosition(newPosition[0], newPosition[1]) != emptyMapCellChar)
+                {
+                
+                    continue;
+                }
+                level.ChangeMapData(newPosition[0],newPosition[1],'*');
+                level.DrawMap(cursorX, cursorY);
+                Thread.Sleep(100);
+            }
+
+            range = pathTrace.Count();
+            for (int j=0;j<range-1;j++)
+            {
+                var trace = pathTrace[j];
+                if(trace[0]==terrorists[t].position[0]&&trace[1]==terrorists[t].position[1]) continue;
+                level.ChangeMapData(trace[0],trace[1],emptyMapCellChar);
+            }
+            level.DrawMap(cursorX, cursorY);
+            Thread.Sleep(100);
+        }
+        private static void MooveOnPath(Map level,Stack<int[]> path,int cursorY,int cursorX,int t,bool chase=false)
+        {
+            if(path.Count()<5&&chase)
+            {
+                //shooting
+                TerroristShoot(level,path,cursorY,cursorX,t);
+                return;        
+            }
             var newPosition = path.Pop();
             if (level.GetDataForPosition(newPosition[0], newPosition[1]) != ' ') return ;
             level.ChangeMapData(terrorists[t].position[0], terrorists[t].position[1], emptyMapCellChar);
@@ -462,6 +511,7 @@ namespace CLI_ROGUERAMBOGAME
             {
                 currentMap.ChangeMapData(player.position[0],player.position[1],'P');
                 currentMap.ChangeMapData(currentY,currentX,emptyMapCellChar);
+                currentturns -= 1;
             } 
         }
 

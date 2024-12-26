@@ -206,11 +206,13 @@ namespace CLI_ROGUERAMBOGAME
         private  int vision=10;
         private  int patrolRange = 7;
         private const int mooves = 5;
+        private  int shootRange = 5;
         public int[] patrolPoint;
         public int Damage()=>damage;
         public int Mooves()=>mooves;
         public int Vision()=>vision;
         public int PatrolRange()=>patrolRange;
+        public int ShootRange()=>shootRange;
         public Terrorist(int[] position, int health, int damage)
         {
             this.damage = damage;
@@ -225,113 +227,113 @@ namespace CLI_ROGUERAMBOGAME
             this.position = position;
         }
          public Stack<int[]> FindPath(char[,] map, int[] targetYX)
-{
-    int height = map.GetLength(0);
-    int width = map.GetLength(1);
-
-    // Direction vectors for moving up, down, left, right, and diagonals
-    int[] directionsX = { 0, 1, 0, -1, 1, 1, -1, -1 };
-    int[] directionsY = { -1, 0, 1, 0, -1, 1, -1, 1 };
-
-    // Priority queue using a List (sorted by f-cost)
-    List<(int[] position, int gCost, int fCost)> openList = new List<(int[], int, int)>();
-    HashSet<string> closedList = new HashSet<string>(); // To avoid revisiting nodes
-    Dictionary<string, int[]> parents = new Dictionary<string, int[]>(); // Track parent nodes
-
-    // Add starting node
-    int[] start = position;
-    int startG = 0;
-    int startH = HeuristicManhattan(start, targetYX);
-    openList.Add((start, startG, startG + startH));
-    parents[Key(start)] = null; // Start node has no parent
-
-    // Pathfinding loop
-    while (openList.Count > 0)
-    {
-        // Sort open list by f-cost, then g-cost (to break ties)
-        openList.Sort((a, b) => a.fCost != b.fCost ? a.fCost.CompareTo(b.fCost) : a.gCost.CompareTo(b.gCost));
-
-        // Get node with the lowest f-cost
-        var currentNode = openList[0];
-        openList.RemoveAt(0);
-
-        int[] currentPosition = currentNode.position;
-        int currentG = currentNode.gCost;
-
-        // Check if we've reached the target
-        if (currentPosition[0] == targetYX[0] && currentPosition[1] == targetYX[1])
         {
-            Stack<int[]> path = new Stack<int[]>();
+            int height = map.GetLength(0);
+            int width = map.GetLength(1);
 
-            // Reconstruct the path
-            while (currentPosition != null)
+            // Direction vectors for moving up, down, left, right, and diagonals
+            int[] directionsX = { 0, 1, 0, -1, 1, 1, -1, -1 };
+            int[] directionsY = { -1, 0, 1, 0, -1, 1, -1, 1 };
+
+            // Priority queue using a List (sorted by f-cost)
+            List<(int[] position, int gCost, int fCost)> openList = new List<(int[], int, int)>();
+            HashSet<string> closedList = new HashSet<string>(); // To avoid revisiting nodes
+            Dictionary<string, int[]> parents = new Dictionary<string, int[]>(); // Track parent nodes
+
+            // Add starting node
+            int[] start = position;
+            int startG = 0;
+            int startH = HeuristicManhattan(start, targetYX);
+            openList.Add((start, startG, startG + startH));
+            parents[Key(start)] = null; // Start node has no parent
+
+            // Pathfinding loop
+            while (openList.Count > 0)
             {
-                path.Push(currentPosition);
-                currentPosition = parents[Key(currentPosition)];
+                // Sort open list by f-cost, then g-cost (to break ties)
+                openList.Sort((a, b) => a.fCost != b.fCost ? a.fCost.CompareTo(b.fCost) : a.gCost.CompareTo(b.gCost));
+
+                // Get node with the lowest f-cost
+                var currentNode = openList[0];
+                openList.RemoveAt(0);
+
+                int[] currentPosition = currentNode.position;
+                int currentG = currentNode.gCost;
+
+                // Check if we've reached the target
+                if (currentPosition[0] == targetYX[0] && currentPosition[1] == targetYX[1])
+                {
+                    Stack<int[]> path = new Stack<int[]>();
+
+                    // Reconstruct the path
+                    while (currentPosition != null)
+                    {
+                        path.Push(currentPosition);
+                        currentPosition = parents[Key(currentPosition)];
+                    }
+
+                    return path; // Return the reconstructed path
+                }
+
+                // Add current position to closed list
+                closedList.Add(Key(currentPosition));
+
+                // Explore neighbors
+                for (int i = 0; i < 8; i++) // 8 directions
+                {
+                    int newX = currentPosition[1] + directionsX[i];
+                    int newY = currentPosition[0] + directionsY[i];
+
+                    // Check bounds
+                    if (newY < 0 || newX < 0 || newY >= height || newX >= width)
+                        continue;
+
+                    // Check if the tile is a wall
+                    if (map[newY, newX] == 'W'  )
+                        continue;
+
+                    // Calculate g-cost for the new position
+                    int jumpCost = 1;
+                    if (map[newY, newX] == 'A' || map[newY, newX] == 'a' || map[newY, newX] == 'H' || map[newY, newX] == 'h' ||  map[newY, newX] == 'T')
+                        jumpCost = 4; // Higher cost for jumping over assets
+
+                    int newG = currentG + jumpCost;
+
+                    // Skip already visited positions
+                    if (closedList.Contains(Key(new int[] { newY, newX })))
+                        continue;
+
+                    // Calculate h-cost and f-cost
+                    int[] newPosition = { newY, newX };
+                    int newH = HeuristicManhattan(newPosition, targetYX);
+                    int newF = newG + newH;
+
+                    // Add to open list if not already present, or update if a better path is found
+                    var existingNode = openList.FirstOrDefault(n => n.position[0] == newY && n.position[1] == newX);
+                    if (existingNode.position == null || newG < existingNode.gCost)
+                    {
+                        if (existingNode.position != null)
+                            openList.Remove(existingNode);
+
+                        openList.Add((newPosition, newG, newF));
+                        parents[Key(newPosition)] = currentPosition; // Track the parent
+                    }
+                }
             }
 
-            return path; // Return the reconstructed path
+            // No path found
+            return new Stack<int[]>();
         }
 
-        // Add current position to closed list
-        closedList.Add(Key(currentPosition));
-
-        // Explore neighbors
-        for (int i = 0; i < 8; i++) // 8 directions
+        private string Key(int[] position)
         {
-            int newX = currentPosition[1] + directionsX[i];
-            int newY = currentPosition[0] + directionsY[i];
-
-            // Check bounds
-            if (newY < 0 || newX < 0 || newY >= height || newX >= width)
-                continue;
-
-            // Check if the tile is a wall
-            if (map[newY, newX] == 'W'  )
-                continue;
-
-            // Calculate g-cost for the new position
-            int jumpCost = 1;
-            if (map[newY, newX] == 'A' || map[newY, newX] == 'a' || map[newY, newX] == 'H' || map[newY, newX] == 'h' ||  map[newY, newX] == 'T')
-                jumpCost = 4; // Higher cost for jumping over assets
-
-            int newG = currentG + jumpCost;
-
-            // Skip already visited positions
-            if (closedList.Contains(Key(new int[] { newY, newX })))
-                continue;
-
-            // Calculate h-cost and f-cost
-            int[] newPosition = { newY, newX };
-            int newH = HeuristicManhattan(newPosition, targetYX);
-            int newF = newG + newH;
-
-            // Add to open list if not already present, or update if a better path is found
-            var existingNode = openList.FirstOrDefault(n => n.position[0] == newY && n.position[1] == newX);
-            if (existingNode.position == null || newG < existingNode.gCost)
-            {
-                if (existingNode.position != null)
-                    openList.Remove(existingNode);
-
-                openList.Add((newPosition, newG, newF));
-                parents[Key(newPosition)] = currentPosition; // Track the parent
-            }
+            return $"{position[0]},{position[1]}";
         }
-    }
 
-    // No path found
-    return new Stack<int[]>();
-}
-
-private string Key(int[] position)
-{
-    return $"{position[0]},{position[1]}";
-}
-
-public int HeuristicManhattan(int[] current, int[] target)
-{
-    return Math.Abs(current[0] - target[0]) + Math.Abs(current[1] - target[1]);
-}
+        public int HeuristicManhattan(int[] current, int[] target)
+        {
+            return Math.Abs(current[0] - target[0]) + Math.Abs(current[1] - target[1]);
+        }
 
     }
 }

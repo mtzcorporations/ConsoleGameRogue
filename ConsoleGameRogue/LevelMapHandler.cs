@@ -27,14 +27,14 @@ namespace CLI_ROGUERAMBOGAME
         {
             lastMessage = "";
         }
-        public void DrawMap(int cursorX, int cursorY)
+        public void DrawMap(int cursorX, int cursorY,bool drawCursor=true)
         {
             Console.Clear();
             for (int y = 0; y < Height; y++) // Iterate over rows (height)
             {
                 for (int x = 0; x < Width; x++) // Iterate over columns (width)
                 {
-                    if (x == cursorX && y == cursorY)
+                    if (x == cursorX && y == cursorY &&drawCursor)
                     {
                         Console.BackgroundColor = ConsoleColor.DarkGray; // Highlight cursor position
                         Console.Write(MapData[y, x]);
