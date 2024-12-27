@@ -210,27 +210,35 @@ namespace CLI_ROGUERAMBOGAME
         {
             for (int t = 0; t < terrorists.Count; t++)
             {
-                var path = terrorists[t].FindPath(level.MapData, player.position );
+                Stack<int[]> pathToPlayer = terrorists[t].FindPath(level.MapData, player.position);
+                int pathLength = pathToPlayer.Count;
 
-                int count = path.Count;
-                int minCount = Math.Min(count, terrorists[t].Mooves());
-                if (count > terrorists[t].Vision()) //patrol mode!
+                // Case 1: Path length < 5, shoot the player
+                if (pathLength < 5)
                 {
-                   path=PatrolPath(level, cursorY, cursorX, t);
-                   if(path==null || path.Count<2) continue;
-                   count = path.Count;
-                   minCount = Math.Min(count, terrorists[t].Mooves());
+                    TerroristShoot(level, pathToPlayer, cursorY, cursorX, t);
+                    if (player.currentHealth <= 0) return; // Stop if player is dead
+                    continue;
                 }
-                else if(minCount<5)
+
+                if (pathLength <= terrorists[t].Vision()) // patrol mode
                 {
-                    //shooting
-                    TerroristShoot(level,path,cursorY,cursorX,t);
-                    continue;        
+                    pathToPlayer= PatrolPath(level, cursorY, cursorX, t);
+                   if (pathToPlayer != null && pathToPlayer.Count >= 1)
+                   {
+                       //MoveAlongPath(level, patrolPath, cursorY, cursorX, t, false);
+                   }
                 }
-                for (int i = 0; i < minCount; i++) //in vision--chase
+
+                int mooves = Math.Min(terrorists[t].Mooves(), pathToPlayer.Count());
+                for (int i = 0; i <mooves; i++) //chase
                 {
-                   
-                    MooveOnPath(level,path,cursorY,cursorX,t,true);
+                    if (pathToPlayer.Count() < 5)
+                    {
+                        TerroristShoot(level, pathToPlayer, cursorY, cursorX, t);
+                        break;
+                    }
+                    MooveOnPath(level,pathToPlayer,cursorY,cursorX,t);
                     terrorists[t].patrolPoint = terrorists[t].position; //set new patrol point
                 }
                 if (player.currentHealth <= 0)
@@ -278,23 +286,16 @@ namespace CLI_ROGUERAMBOGAME
             level.DrawMap(cursorX, cursorY);
             Thread.Sleep(300);
         }
-        private static bool  MooveOnPath(Map level,Stack<int[]> path,int cursorY,int cursorX,int t,bool chase=false)
+        private static void  MooveOnPath(Map level,Stack<int[]> path,int cursorY,int cursorX,int t)
         {
-            if(path.Count()<5&&chase)
-            {
-                //shooting
-                TerroristShoot(level,path,cursorY,cursorX,t);
-                return true;        
-            }
+          
             var newPosition = path.Pop();
-            if (level.GetDataForPosition(newPosition[0], newPosition[1]) != ' ') return false;
+            if (level.GetDataForPosition(newPosition[0], newPosition[1]) != ' ') return;
             level.ChangeMapData(terrorists[t].position[0], terrorists[t].position[1], emptyMapCellChar);
             terrorists[t].UpdatePosition(newPosition);
             level.ChangeMapData(newPosition[0], newPosition[1], 'T');
             level.DrawMap(cursorX, cursorY);
             Thread.Sleep(100);
-
-            return false;
         }
         private static Stack<int[]> PatrolPath(Map level,int cursorY,int cursorX, int t)
         {
@@ -309,8 +310,8 @@ namespace CLI_ROGUERAMBOGAME
                 {
                     return path;
                 }
-                if(MooveOnPath(level,patrolPath,cursorY,cursorX,t)) return null;
-                
+                MooveOnPath(level,patrolPath,cursorY,cursorX,t);
+
             }
 
             return null;
