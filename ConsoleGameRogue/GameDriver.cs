@@ -209,7 +209,7 @@ namespace CLI_ROGUERAMBOGAME
             else
             {
                 Reset(customPath,customLevel);
-                MenuScreen.GameOver();
+                MenuScreen.GameOver(customPath,customLevel);
             }
            
             Thread.Sleep(100);
@@ -257,6 +257,16 @@ namespace CLI_ROGUERAMBOGAME
             }
 
         }
+
+        private static void flashEffect(Map level,int [] newPosition)
+        {
+            level.DrawMap(newPosition[1], newPosition[0]);
+            Thread.Sleep(150);
+            level.DrawMap(0, 0,false);
+            Thread.Sleep(100);
+            level.DrawMap(newPosition[1], newPosition[0]);
+            Thread.Sleep(100);
+        }
         private static void TerroristShoot(Map level,Stack<int[]> path,int cursorY,int cursorX,int t)
         {
             List<int[]> pathTrace = new List<int[]>(); 
@@ -266,13 +276,8 @@ namespace CLI_ROGUERAMBOGAME
                 var newPosition = path.Pop();
                 if (path.Count ==0)
                 {
-                    level.DrawMap(newPosition[1], newPosition[0]);
-                    Thread.Sleep(150);
-                    level.DrawMap(0, 0,false);
-                    Thread.Sleep(100);
-                    level.DrawMap(newPosition[1], newPosition[0]);
-                    Thread.Sleep(100);
-            
+                    flashEffect(level,newPosition);
+
                 }
                 if (level.GetDataForPosition(newPosition[0], newPosition[1]) != emptyMapCellChar)
                 {
@@ -568,6 +573,7 @@ namespace CLI_ROGUERAMBOGAME
                 
                 if (mapCell != emptyMapCellChar)
                 {
+                    flashEffect(currentMap,new [] {bulletY,bulletX});
                     Thread.Sleep(200); 
                     break;
                 }

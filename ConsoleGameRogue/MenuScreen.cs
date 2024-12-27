@@ -63,7 +63,7 @@ namespace CLI_ROGUERAMBOGAME
             
         }
 
-        public static void GameOver()
+        public static void GameOver(String customPath,bool customLevel)
         {
             string[] options = { "Restart", "Main Menu", "Exit" };
             int selectedIndex = 0;
@@ -107,7 +107,7 @@ namespace CLI_ROGUERAMBOGAME
                     switch (selectedIndex)
                     {
                         case 0:
-                            PlayGame();
+                            GameDriver.PlayGame(customPath,customLevel);
                             break;
                         case 1:
                             Menu();
