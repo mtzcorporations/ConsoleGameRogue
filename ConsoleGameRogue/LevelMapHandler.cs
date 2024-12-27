@@ -97,9 +97,9 @@ namespace CLI_ROGUERAMBOGAME
                 case 'a':
                     return $"Small Ammo +{GameDriver.player.smallAmmo} rounds";
                 case 'h':
-                    return $"Small health +{GameDriver.player.smallHealth} rounds";
+                    return $"Small health +{GameDriver.player.smallHealth} health";
                 case 'H':
-                    return $"Big health +{GameDriver.player.bigHealth} rounds";
+                    return $"Big health +{GameDriver.player.bigHealth} health";
                 case 'T':
                     int index = GameDriver.FindTerroristIndex(y, x);
                     Terrorist t = GameDriver.terrorists[index];

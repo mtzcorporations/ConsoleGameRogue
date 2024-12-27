@@ -153,7 +153,9 @@ namespace CLI_ROGUERAMBOGAME
             {
                 Console.Clear();
                 Console.WriteLine($"__________Files in {directoryPath}__________");
-
+                Console.BackgroundColor = ConsoleColor.DarkRed;
+                Console.WriteLine($"CHOOSE LEVEL");
+                Console.ResetColor();
                 for (int i = 0; i < files.Length; i++)
                 {
                     string fileName = Path.GetFileName(files[i]);
@@ -168,7 +170,9 @@ namespace CLI_ROGUERAMBOGAME
                         Console.WriteLine("  " + fileName);
                     }
                 }
-
+                Console.ForegroundColor = ConsoleColor.Yellow;
+                GraphicsReader.PrintGraphics("KNIFE");
+                Console.ResetColor();
                 ConsoleKeyInfo keyInfo = Console.ReadKey(true);
 
                 if (keyInfo.Key == ConsoleKey.UpArrow)
@@ -228,7 +232,9 @@ namespace CLI_ROGUERAMBOGAME
                         GenerateMap();
                         break;
                     case ConsoleKey.Enter:
-                        SaveMap();
+                        string uniqueId = Guid.NewGuid().ToString();
+                        string filePath =GameDriver.pathToLevels+ $"\\customLevel_{uniqueId}.txt";
+                        SaveMap(map.MapData, filePath);
                         break;
                     case ConsoleKey.F1:
                         Menu();
@@ -239,9 +245,32 @@ namespace CLI_ROGUERAMBOGAME
                 }
             }
         }
-
-        static void SaveMap()
+        
+        static void SaveMap(char[,] map, string filePath)
         {
+            try
+            {
+                using (StreamWriter writer = new StreamWriter(filePath))
+                {
+                    int rows = map.GetLength(0);
+                    int cols = map.GetLength(1);
+
+                    for (int i = 0; i < rows; i++)
+                    {
+                        for (int j = 0; j < cols; j++)
+                        {
+                            writer.Write(map[i, j]);
+                        }
+                        writer.WriteLine();
+                    }
+                }
+
+                Console.WriteLine($"Map successfully saved to {filePath}");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saving map: {ex.Message}");
+            }
         }
 
         static void PlayGame()
