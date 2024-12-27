@@ -10,7 +10,7 @@ namespace CLI_ROGUERAMBOGAME
         public int Width;
         public int Height;
         private string lastMessage = "";
-        
+        private DateTime lastResetTime = DateTime.MinValue;
         public Map(char[,] mapData)
         {
             MapData = mapData;
@@ -60,7 +60,11 @@ namespace CLI_ROGUERAMBOGAME
             }
             GameDriver.player.DisplayInventoryAndInfo(); //print player info
             Console.WriteLine(lastMessage);
-            ResetInfo();
+            if ((DateTime.Now - lastResetTime).TotalSeconds >= 2)
+            {
+                ResetInfo();
+                lastResetTime = DateTime.Now; // Update the last reset time
+            }
         }
         public void DisplayCellInfo(int x, int y)
         {

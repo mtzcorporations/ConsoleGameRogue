@@ -243,23 +243,38 @@ namespace CLI_ROGUERAMBOGAME
         public int[] position;
         public int health;
         private int damage;
-        private  int vision=10;
-        private  int patrolRange = 7;
-        private const int mooves = 5;
-        private  int shootRange = 5;
+        private  int vision;
+        private  int patrolRange;
+        private  int mooves;
+        private  int shootRange;
         public int[] patrolPoint;
-        public int Damage()=>damage;
-        public int Mooves()=>mooves;
-        public int Vision()=>vision;
-        public int PatrolRange()=>patrolRange;
-        public int ShootRange()=>shootRange;
+        public int Damage(){
+            return damage;
+        }
+        public int Mooves(){
+            return mooves;
+        }
+
+        public int Vision()
+        {
+            return vision;
+        }
+        public int PatrolRange() {
+            return patrolRange;
+        }
+        public int ShootRange(){
+            return shootRange;
+        }
         public Terrorist(int[] position, int health, int damage)
         {
-            this.damage = damage;
+            this.damage = 3000;
             this.health = health;
             this.position = position;
             patrolPoint = this.position;
-
+            vision = 10;
+            mooves = 5;
+            shootRange = 5;
+            patrolRange = 7;
         }
 
         public void UpdatePosition(int[] position)

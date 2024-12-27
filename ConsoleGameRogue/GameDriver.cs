@@ -191,18 +191,27 @@ namespace CLI_ROGUERAMBOGAME
                         stayInloop = false;
                         break;
                 }
-
+            if (player.currentHealth <= 0)
+            {
+                break;
+            }
             }
             if (keyToControlMap[key] == Controls.Reset)
             {
                 Reset(customPath,customLevel);
                 PlayGame(customPath,customLevel);
             }
-            else
+            else if(keyToControlMap[key]==Controls.MainMenu)
             {
                 Reset(customPath,customLevel);
                 MenuScreen.Menu();
             }
+            else
+            {
+                Reset(customPath,customLevel);
+                MenuScreen.GameOver();
+            }
+           
             Thread.Sleep(100);
         }
 
@@ -214,26 +223,26 @@ namespace CLI_ROGUERAMBOGAME
                 int pathLength = pathToPlayer.Count;
 
                 // Case 1: Path length < 5, shoot the player
-                if (pathLength < 5)
+                if (pathLength <  terrorists[t].ShootRange())
                 {
                     TerroristShoot(level, pathToPlayer, cursorY, cursorX, t);
                     if (player.currentHealth <= 0) return; // Stop if player is dead
                     continue;
                 }
 
-                if (pathLength <= terrorists[t].Vision()) // patrol mode
+                if (pathLength > terrorists[t].Vision()) // patrol mode
                 {
                     pathToPlayer= PatrolPath(level, cursorY, cursorX, t);
-                   if (pathToPlayer != null && pathToPlayer.Count >= 1)
+                   if (pathToPlayer == null || pathToPlayer.Count < 1)
                    {
-                       //MoveAlongPath(level, patrolPath, cursorY, cursorX, t, false);
+                       continue;
                    }
                 }
 
                 int mooves = Math.Min(terrorists[t].Mooves(), pathToPlayer.Count());
                 for (int i = 0; i <mooves; i++) //chase
                 {
-                    if (pathToPlayer.Count() < 5)
+                    if (pathToPlayer.Count() < terrorists[t].ShootRange())
                     {
                         TerroristShoot(level, pathToPlayer, cursorY, cursorX, t);
                         break;
@@ -306,7 +315,7 @@ namespace CLI_ROGUERAMBOGAME
             for (int i=0;i<steps;i++)
             {
                 var path = terrorists[t].FindPath(level.MapData, player.position );
-                if (path.Count() <= terrorists[t].Vision())
+                if (path.Count() <= terrorists[t].Vision()) //go into chase mode
                 {
                     return path;
                 }
@@ -584,10 +593,10 @@ namespace CLI_ROGUERAMBOGAME
         private static void Reset(String customLevelPath,bool customLevel)
         {
             currentturns = AVAIBLETURNS;
-            terrorists.Clear();
+            terrorists = new List<Terrorist>();
             player = null;
             //LevelMapHandler.ResetLevels();
-            LoadLevel(customLevelPath,customLevel);
+            //LoadLevel(customLevelPath,customLevel);
          
         }
       

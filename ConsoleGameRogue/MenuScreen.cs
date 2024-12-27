@@ -62,6 +62,65 @@ namespace CLI_ROGUERAMBOGAME
             }
             
         }
+
+        public static void GameOver()
+        {
+            string[] options = { "Restart", "Main Menu", "Exit" };
+            int selectedIndex = 0;
+            bool stayInMenu = true;
+            while (stayInMenu)
+            {
+                Console.Clear();
+                Console.BackgroundColor = ConsoleColor.Red;
+                Console.ForegroundColor = ConsoleColor.DarkCyan;
+                Console.WriteLine("GAME OVER! YOU WERE SHOT!");
+                Console.ResetColor();
+                for (int i = 0; i < options.Length; i++)
+                {
+                    if (i == selectedIndex)
+                    {
+                        Console.ForegroundColor = ConsoleColor.DarkCyan;
+                        Console.BackgroundColor = ConsoleColor.DarkGray;
+                        Console.WriteLine("> " + options[i]);
+                        Console.ResetColor();
+                    }
+                    else
+                    {
+                        Console.WriteLine("  " + options[i]);
+                    }
+                }
+
+                GraphicsReader.PrintGraphics("BOMB");
+                ConsoleKeyInfo keyInfo = Console.ReadKey(true);
+
+                if (keyInfo.Key == ConsoleKey.UpArrow)
+                {
+                    selectedIndex = (selectedIndex - 1 + options.Length) % options.Length;
+                }
+                else if (keyInfo.Key == ConsoleKey.DownArrow)
+                {
+                    selectedIndex = (selectedIndex + 1) % options.Length;
+                }
+                else if (keyInfo.Key == ConsoleKey.Enter)
+                {
+                    stayInMenu = false;
+                    switch (selectedIndex)
+                    {
+                        case 0:
+                            PlayGame();
+                            break;
+                        case 1:
+                            Menu();
+                            break;
+                        case 2:
+                            Environment.Exit(0);
+                            break;
+
+                    }
+                }
+            }
+        }
+
         static void LoadLevel()
         {
             //String path = GameDriver.pathToSavedData+"\\tale.txt";
