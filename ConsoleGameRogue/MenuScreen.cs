@@ -192,12 +192,58 @@ namespace CLI_ROGUERAMBOGAME
         }
         static void GenerateMap()
         {
+            Console.Clear();
             // Implementation for saved  data
             Console.WriteLine("Loading saved Data...");
             MapGenerator generator = new MapGenerator();
-            char[,] map = generator.GenerateMap(30, 15, 5, 3, 3, 4, 4);
-            generator.PrintMap();
+            Random rand = new Random();
+            int width = rand.Next(70, 140);
+            int height = rand.Next(13, 25);
+            int terroristNum = rand.Next(3, 8);
+            int bigHealth = rand.Next(2, 5);
+            int smallHealth = rand.Next(3, 8);
+            int bigAmmo = rand.Next(2, 5);
+            int smallAmmo = rand.Next(4, 8);
+            char[,] mapC = generator.GenerateMap(width, height, terroristNum, bigHealth, smallHealth, bigAmmo, smallAmmo);
+            Map map = new Map(mapC);
+            GameMenu(generator,map);
         }
+        static void GameMenu(MapGenerator generator,Map map)
+        {
+            while (true)
+            {
+                Console.Clear();
+                map.MapAreaPrint(0,0,false);
+                Console.WriteLine("=== Menu Options ===");
+                Console.WriteLine("[R] Generate a new map");
+                Console.WriteLine("[Enter] Save the current map");
+                Console.WriteLine("[F1] Main menu");
+                Console.WriteLine("====================");
+
+                var key = Console.ReadKey(true).Key;
+
+                switch (key)
+                {
+                    case ConsoleKey.R:
+                        GenerateMap();
+                        break;
+                    case ConsoleKey.Enter:
+                        SaveMap();
+                        break;
+                    case ConsoleKey.F1:
+                        Menu();
+                        break;
+                    default:
+                        Console.WriteLine("Invalid key. Please select a valid option.");
+                        break;
+                }
+            }
+        }
+
+        static void SaveMap()
+        {
+        }
+
         static void PlayGame()
         {
             string path = ListDir(GameDriver.pathToLevels);

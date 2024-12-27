@@ -29,7 +29,19 @@ namespace CLI_ROGUERAMBOGAME
         }
         public void DrawMap(int cursorX, int cursorY,bool drawCursor=true)
         {
-            Console.Clear();
+            Console.Clear(); 
+            MapAreaPrint(cursorX,cursorY,drawCursor);
+            GameDriver.player.DisplayInventoryAndInfo(); //print player info
+            Console.WriteLine(lastMessage);
+            if ((DateTime.Now - lastResetTime).TotalSeconds >= 2)
+            {
+                ResetInfo();
+                lastResetTime = DateTime.Now; // Update the last reset time
+            }
+        }
+
+        public void MapAreaPrint(int cursorX, int cursorY,bool drawCursor)
+        {
             for (int y = 0; y < Height; y++) // Iterate over rows (height)
             {
                 for (int x = 0; x < Width; x++) // Iterate over columns (width)
@@ -57,13 +69,6 @@ namespace CLI_ROGUERAMBOGAME
                     }
                 }
                 Console.WriteLine();
-            }
-            GameDriver.player.DisplayInventoryAndInfo(); //print player info
-            Console.WriteLine(lastMessage);
-            if ((DateTime.Now - lastResetTime).TotalSeconds >= 2)
-            {
-                ResetInfo();
-                lastResetTime = DateTime.Now; // Update the last reset time
             }
         }
         public void DisplayCellInfo(int x, int y)

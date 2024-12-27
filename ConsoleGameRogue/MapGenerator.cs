@@ -21,10 +21,10 @@ namespace CLI_ROGUERAMBOGAME
         }
 
         // Step 2: Generate maze using Recursive Backtracking
-        GenerateMaze(1, 1);
+        GenerateMaze(height, width);
 
         // Step 3: Create open areas
-        CreateOpenAreas();
+        //CreateOpenAreas();
 
         // Step 4: Place player
         PlacePlayer();
@@ -39,56 +39,76 @@ namespace CLI_ROGUERAMBOGAME
         return map;
     }
 
-    private void GenerateMaze(int startY, int startX)
+    private void GenerateMaze(int sizeY, int sizeX)
     {
-        // Directions: [dy, dx]
-        int[] deltaY = { -2, 2, 0, 0 };
-        int[] deltaX = { 0, 0, -2, 2 };
-
-        // Shuffle directions for randomness
-        for (int i = 0; i < deltaY.Length; i++)
+        Random rand = new Random();
+        int numBlocks = rand.Next(7,12);
+        if (sizeX > 100) numBlocks += 2;
+        for (int i = 0; i < sizeY; i++)
         {
-            int swapIndex = random.Next(i, deltaY.Length);
-            (deltaY[i], deltaY[swapIndex]) = (deltaY[swapIndex], deltaY[i]);
-            (deltaX[i], deltaX[swapIndex]) = (deltaX[swapIndex], deltaX[i]);
-        }
-
-        map[startY, startX] = '.'; // Mark starting point as a path
-
-        for (int i = 0; i < deltaY.Length; i++)
-        {
-            int newY = startY + deltaY[i];
-            int newX = startX + deltaX[i];
-
-            // Check if the new cell is valid
-            if (newY > 0 && newY < map.GetLength(0) - 1 && newX > 0 && newX < map.GetLength(1) - 1 && map[newY, newX] == 'W')
+            for (int j = 0; j < sizeX; j++)
             {
-                // Carve a path between cells
-                map[startY + deltaY[i] / 2, startX + deltaX[i] / 2] = '.';
-                GenerateMaze(newY, newX); // Recurse
-            }
-        }
-    }
-
-    private void CreateOpenAreas()
-    {
-        int openAreaCount = random.Next(3, 6); // Number of open areas to create
-        for (int i = 0; i < openAreaCount; i++)
-        {
-            int areaWidth = random.Next(3, 6);
-            int areaHeight = random.Next(3, 6);
-            int startY = random.Next(1, map.GetLength(0) - areaHeight - 1);
-            int startX = random.Next(1, map.GetLength(1) - areaWidth - 1);
-
-            for (int y = 0; y < areaHeight; y++)
-            {
-                for (int x = 0; x < areaWidth; x++)
+                if (i == 0 || i == sizeY - 1 || j==0 || j==sizeX-1)
                 {
-                    map[startY + y, startX + x] = '.';
+                    map[i, j] = 'W';
+                }
+                else
+                {
+                    map[i, j] = ' ';
                 }
             }
         }
+        int minimalBlockDistance = 3; // At least 3 empty spaces between walls
+        int usualDistance = sizeX / numBlocks;
+        int lastBlockEndX = -minimalBlockDistance; 
+
+        for (int i = 0; i < numBlocks; i++)
+        {
+            Random rnd = new Random();
+            int blockHeight = rnd.Next(sizeY / 2 + 3, sizeY - 3);
+            int blockWidth = rnd.Next(2, 5); // Randomize wall thickness
+            // Ensure the next wall starts at least minimalBlockDistance away from the previous wall
+            int startX = Math.Max(lastBlockEndX + minimalBlockDistance, i * usualDistance + rnd.Next(0, usualDistance));
+            // ensure the wall fits within the map boundaries
+            startX = Math.Min(startX, sizeX - blockWidth);
+
+            int startY;
+            int wallPositionChoice = rnd.Next(3); // 0 = top edge, 1 = bottom edge, 2 = middle
+
+            if (wallPositionChoice == 0)
+            {
+                // Top edge
+                startY = 0;
+            }
+            else if (wallPositionChoice == 1)
+            {
+                // Bottom edge
+                startY = sizeY - blockHeight;
+            }
+            else
+            {
+                // Middle
+                startY = rnd.Next(0, sizeY - blockHeight);
+            }
+
+            // Place the wall in the map
+            for (int j = 0; j < blockWidth; j++)
+            {
+                for (int k = 0; k < blockHeight; k++)
+                {
+                    if (startY + k < sizeY && startX + j < sizeX)
+                    {
+                        map[startY + k, startX + j] = 'W';
+                    }
+                }
+            }
+
+            // Update the end position of the current wall
+            lastBlockEndX = startX + blockWidth - 1;
+        }
     }
+
+ 
 
     private void PlacePlayer()
     {
@@ -97,7 +117,7 @@ namespace CLI_ROGUERAMBOGAME
             int y = random.Next(1, map.GetLength(0) - 1);
             int x = random.Next(1, map.GetLength(1) - 1);
 
-            if (map[y, x] == '.') // Place player in an open cell
+            if (map[y, x] == ' ') // Place player in an open cell
             {
                 map[y, x] = 'P';
                 break;
@@ -114,7 +134,7 @@ namespace CLI_ROGUERAMBOGAME
                 int y = random.Next(1, map.GetLength(0) - 1);
                 int x = random.Next(1, map.GetLength(1) - 1);
 
-                if (map[y, x] == '.') // Place objects in open cells
+                if (map[y, x] == ' ') // Place objects in open cells
                 {
                     map[y, x] = objectType;
                     break;
@@ -122,18 +142,7 @@ namespace CLI_ROGUERAMBOGAME
             }
         }
     }
-
-    public void PrintMap()
-    {
-        for (int y = 0; y < map.GetLength(0); y++)
-        {
-            for (int x = 0; x < map.GetLength(1); x++)
-            {
-                Console.Write(map[y, x]);
-            }
-            Console.WriteLine();
-        }
-    }
+    
 }
     
 }
