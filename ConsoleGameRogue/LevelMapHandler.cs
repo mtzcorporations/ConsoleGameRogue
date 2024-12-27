@@ -68,7 +68,7 @@ namespace CLI_ROGUERAMBOGAME
         }
         public void DisplayCellInfo(int x, int y)
         {
-            string info = getInfo(MapData[y, x]);
+            string info = getInfo(y,x);
             lastMessage = $"INFO: Cursor Position: ({x}, {y}), is: {info}";
 
         }
@@ -78,16 +78,27 @@ namespace CLI_ROGUERAMBOGAME
         {
             lastMessage = message;
         }
-        string getInfo(char currentField)
+        string getInfo(int y, int x)
         {
+            char currentField = MapData[y, x];
             switch (currentField)
             {
                 case 'W':
-                    return "Wall";
+                    return "Wall, cannot walk overt it!";
                 case 'P':
                     return "Player";
+                case 'A':
+                    return $"Big Ammo +{GameDriver.player.bigAmmo} rounds";
+                case 'a':
+                    return $"Small Ammo +{GameDriver.player.smallAmmo} rounds";
+                case 'h':
+                    return $"Small health +{GameDriver.player.smallHealth} rounds";
+                case 'H':
+                    return $"Big health +{GameDriver.player.bigHealth} rounds";
                 case 'T':
-                    return "Terrorist";
+                    int index = GameDriver.FindTerroristIndex(y, x);
+                    Terrorist t = GameDriver.terrorists[index];
+                    return $"Terrorist health {t.health} damage: {t.Damage()} vision: {t.Vision()} moves: {t.Mooves()} ";
                 default:
                     return "Empty cell";
             }

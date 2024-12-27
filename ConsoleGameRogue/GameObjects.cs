@@ -11,6 +11,11 @@ namespace CLI_ROGUERAMBOGAME
         public int ammonition = 4;
         public char[] inventory;
         public int inventorySize=5;
+        public int damage=100;
+        public int bigAmmo = 5;
+        public int smallAmmo = 3;
+        public int bigHealth = 200;
+        public int smallHealth= 100;
         public Player(int [] position)
         {
             this.position = position;
@@ -54,24 +59,24 @@ namespace CLI_ROGUERAMBOGAME
                     {
                         if (inventory[index]=='A')
                         {
-                            ammonition += 5;
+                            ammonition += bigAmmo;
                             inventory[index] = '-';
                             return;
                         }
                         if (inventory[index]=='a')
                         {
-                            ammonition += 3;
+                            ammonition += smallAmmo;
                             inventory[index] = '-';
                             return;
                         }
                         if (inventory[index]=='H')
                         {
-                            UseHealthItem('H', 200, index,level);
+                            UseHealthItem('H', bigHealth, index,level);
                             return;
                         }
                         if (inventory[index]=='h')
                         {
-                            UseHealthItem('h', 100, index,level);
+                            UseHealthItem('h', smallHealth, index,level);
                             return;
                         }
                         return; // Exit the method after using item
@@ -267,7 +272,7 @@ namespace CLI_ROGUERAMBOGAME
         }
         public Terrorist(int[] position, int health, int damage)
         {
-            this.damage = 3000;
+            this.damage = damage;
             this.health = health;
             this.position = position;
             patrolPoint = this.position;

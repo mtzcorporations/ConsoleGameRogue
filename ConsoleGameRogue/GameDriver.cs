@@ -103,7 +103,7 @@ namespace CLI_ROGUERAMBOGAME
             Map levelData = LevelMapHandler.GetLevel();
             int mapHeight = levelData.Height;
             int mapWidth = levelData.Width;
-            
+            bool isWin = false;
             ConsoleKey key=ConsoleKey.F1;
           
             bool stayInloop = true;
@@ -195,6 +195,12 @@ namespace CLI_ROGUERAMBOGAME
             {
                 break;
             }
+
+            if (terrorists.Count() <= 0)
+            {
+                isWin = true;
+                break;
+            }
             }
             if (keyToControlMap[key] == Controls.Reset)
             {
@@ -209,7 +215,7 @@ namespace CLI_ROGUERAMBOGAME
             else
             {
                 Reset(customPath,customLevel);
-                MenuScreen.GameOver(customPath,customLevel);
+                MenuScreen.GameOver(customPath,customLevel,isWin);
             }
            
             Thread.Sleep(100);
@@ -574,6 +580,18 @@ namespace CLI_ROGUERAMBOGAME
                 if (mapCell != emptyMapCellChar)
                 {
                     flashEffect(currentMap,new [] {bulletY,bulletX});
+                    //do damage
+                    if (mapCell == 'T')
+                    {
+                        int index = FindTerroristIndex(bulletY, bulletX);
+                        terrorists[index].health -= player.damage;
+                        if (terrorists[index].health <= 0)
+                        {
+                            terrorists.RemoveAt(index);
+                            currentMap.ChangeMapData(bulletY,bulletX,emptyMapCellChar);
+                        }
+                    }
+
                     Thread.Sleep(200); 
                     break;
                 }
@@ -595,7 +613,17 @@ namespace CLI_ROGUERAMBOGAME
             }
             Thread.Sleep(300);
         }
-        
+        public static int FindTerroristIndex(int y, int x)
+        {
+            for (int i = 0; i < terrorists.Count; i++)
+            {
+                if (terrorists[i].position[0] ==y && terrorists[i].position[1] == x)
+                {
+                    return i; // Return the index if positions match
+                }
+            }
+            return -1; // Return -1 if no match is found
+        }
         private static void Reset(String customLevelPath,bool customLevel)
         {
             currentturns = AVAIBLETURNS;

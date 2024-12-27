@@ -63,7 +63,7 @@ namespace CLI_ROGUERAMBOGAME
             
         }
 
-        public static void GameOver(String customPath,bool customLevel)
+        public static void GameOver(String customPath,bool customLevel,bool isWin)
         {
             string[] options = { "Restart", "Main Menu", "Exit" };
             int selectedIndex = 0;
@@ -73,7 +73,8 @@ namespace CLI_ROGUERAMBOGAME
                 Console.Clear();
                 Console.BackgroundColor = ConsoleColor.Red;
                 Console.ForegroundColor = ConsoleColor.DarkCyan;
-                Console.WriteLine("GAME OVER! YOU WERE SHOT!");
+                if(isWin)   Console.WriteLine("Congratulations, you won the game!");
+                else Console.WriteLine("GAME OVER! YOU WERE SHOT!");
                 Console.ResetColor();
                 for (int i = 0; i < options.Length; i++)
                 {
