@@ -20,7 +20,7 @@ namespace CLI_ROGUERAMBOGAME
         private static int[] deltaY = { -1, -1, -1, 0, 0, 1, 1, 1 };
         private static int[] deltaX = { -1, 0, 1, -1, 1, -1, 0, 1 };
         
-        public static  int currentturns = 0;
+        public static  int currentturns = AVAIBLETURNS;
         public static Player player;
         public static List<Terrorist> terrorists = new List<Terrorist>();
         public const int terroristDamage = 50;
