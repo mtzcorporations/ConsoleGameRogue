@@ -311,6 +311,7 @@ namespace CLI_ROGUERAMBOGAME
             Console.WriteLine("Arrow Keys".PadRight(15) + "--> Movement");
             Console.WriteLine("W, A, S, D".PadRight(15) + "--> Cursor movement");
             Console.WriteLine("I".PadRight(15) + "--> Info");
+            Console.WriteLine("F3".PadRight(15) + "--> Save Game");
             Console.WriteLine("F1".PadRight(15) + "--> Return to main menu");
            
             Console.ResetColor();
