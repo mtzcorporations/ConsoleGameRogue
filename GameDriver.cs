@@ -97,53 +97,63 @@ namespace CLI_ROGUERAMBOGAME
                 Console.WriteLine($"Error: {ex.Message}");
             }
         }
-        public static void PlayGame(String customPath,bool customLevel) {    
+        private static ConsoleKey lastKey = ConsoleKey.NoName; // Track the last pressed key
+        private static DateTime lastKeyPressTime = DateTime.MinValue; // Track the last key press time
+
+        public static void PlayGame(string customPath, bool customLevel)
+        {
             int cursorX = 1, cursorY = 1;
-            LoadLevel(customPath,customLevel);
+            LoadLevel(customPath, customLevel);
             Map levelData = LevelMapHandler.GetLevel();
             int mapHeight = levelData.Height;
             int mapWidth = levelData.Width;
             bool isWin = false;
-            ConsoleKey key=ConsoleKey.F1;
-          
+            ConsoleKey key = ConsoleKey.F1;
+
             bool stayInloop = true;
-            while(stayInloop)
+            while (stayInloop)
             {
                 Controls control;
                 Console.Clear();
-                levelData.DrawMap(cursorX,cursorY);
+                levelData.DrawMap(cursorX, cursorY);
+
                 if (currentturns <= 0)
                 {
-                    TerroristTurn(levelData,cursorY,cursorX);
+                    TerroristTurn(levelData, cursorY, cursorX);
                     currentturns = AVAIBLETURNS;
                     continue;
                 }
+
                 key = Console.ReadKey(true).Key;
-               
+
+                // Block repeated actions if key is held down
+                if (key == lastKey && (DateTime.Now - lastKeyPressTime).TotalMilliseconds < 200)
+                {
+                    continue; // Skip processing this key
+                }
+
+                lastKey = key; // Update last key
+                lastKeyPressTime = DateTime.Now; // Update last key press time
+
                 // Check dictionary
                 if (keyToControlMap.ContainsKey(key))
                 {
-                    control = keyToControlMap[key];  
+                    control = keyToControlMap[key];
                 }
                 else
                 {
                     levelData.CustomMessage("Pressed key does nothing!");
                     continue;
                 }
-                
+
+                // Process controls
                 switch (control)
                 {
                     case Controls.MoveUp:
-                        MoveControler(mapHeight,mapWidth,key,levelData);
-                        break;
                     case Controls.MoveDown:
-                        MoveControler(mapHeight,mapWidth,key,levelData);
-                        break;
                     case Controls.MoveLeft:
-                        MoveControler(mapHeight,mapWidth,key,levelData);
-                        break;
                     case Controls.MoveRight:
-                        MoveControler(mapHeight,mapWidth,key,levelData);
+                        MoveControler(mapHeight, mapWidth, key, levelData);
                         break;
                     case Controls.CursorUp:
                         if (cursorY > 0) cursorY--;
@@ -161,7 +171,7 @@ namespace CLI_ROGUERAMBOGAME
                         levelData.DisplayCellInfo(cursorX, cursorY);
                         break;
                     case Controls.Shoot:
-                        Shooting(new []{cursorY,cursorX},player.position,5,levelData);
+                        Shooting(new[] { cursorY, cursorX }, player.position, 5, levelData);
                         break;
                     case Controls.Reload:
                         if (player.ammonition < 4)
@@ -174,7 +184,7 @@ namespace CLI_ROGUERAMBOGAME
                         PickUpItem(levelData);
                         break;
                     case Controls.DropItem:
-                        player.DropFromInventory(deltaY,deltaX,levelData);
+                        player.DropFromInventory(deltaY, deltaX, levelData);
                         break;
                     case Controls.UseItem:
                         player.UseItem(levelData);
@@ -182,44 +192,46 @@ namespace CLI_ROGUERAMBOGAME
                     case Controls.SaveGame:
                         string[] parts = customPath.Split('\\');
                         string name = parts[^1].Split('.')[0];
-                        SaveGame(levelData,name);
+                        SaveGame(levelData, name);
                         break;
                     case Controls.Reset:
-                        stayInloop = false;
-                        break;
                     case Controls.MainMenu:
                         stayInloop = false;
                         break;
                 }
-            if (player.currentHealth <= 0)
-            {
-                break;
+
+                if (player.currentHealth <= 0)
+                {
+                    break;
+                }
+
+                if (terrorists.Count() <= 0)
+                {
+                    isWin = true;
+                    break;
+                }
             }
 
-            if (terrorists.Count() <= 0)
-            {
-                isWin = true;
-                break;
-            }
-            }
+            // Reset logic
             if (keyToControlMap[key] == Controls.Reset)
             {
-                Reset(customPath,customLevel);
-                PlayGame(customPath,customLevel);
+                Reset(customPath, customLevel);
+                PlayGame(customPath, customLevel);
             }
-            else if(keyToControlMap[key]==Controls.MainMenu)
+            else if (keyToControlMap[key] == Controls.MainMenu)
             {
-                Reset(customPath,customLevel);
+                Reset(customPath, customLevel);
                 MenuScreen.Menu();
             }
             else
             {
-                Reset(customPath,customLevel);
-                MenuScreen.GameOver(customPath,customLevel,isWin);
+                Reset(customPath, customLevel);
+                MenuScreen.GameOver(customPath, customLevel, isWin);
             }
-           
+
             Thread.Sleep(100);
         }
+
 
         private static  void TerroristTurn(Map level,int cursorY,int cursorX)
         {
