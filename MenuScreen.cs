@@ -308,6 +308,7 @@ namespace CLI_ROGUERAMBOGAME
             Console.WriteLine("D".PadRight(15) + "--> Drop item");
             Console.WriteLine("U".PadRight(15) + "--> Use item");
             Console.WriteLine("P".PadRight(15) + "--> Pickup item");
+            Console.WriteLine("M".PadRight(15) + "--> Restart game");
             Console.WriteLine("Arrow Keys".PadRight(15) + "--> Movement");
             Console.WriteLine("W, A, S, D".PadRight(15) + "--> Cursor movement");
             Console.WriteLine("I".PadRight(15) + "--> Info");
